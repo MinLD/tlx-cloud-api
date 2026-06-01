@@ -1,0 +1,33 @@
+{
+  "name": "tlx-cloud-api",
+  "version": "0.1.0",
+  "description": "TLX Cloud API - Express.js backend for authentication, workspaces, scan ingestion, artifacts, reports, billing, and API monitoring.",
+  "type": "module",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "bun --watch index.ts",
+    "start": "bun index.ts",
+    "check": "bun --check index.ts",
+    "build": "tsc --noEmit"
+  },
+  "keywords": [
+    "tlx",
+    "cloud",
+    "api",
+    "express",
+    "saas",
+    "scan",
+    "report"
+  ],
+  "dependencies": {
+    "express": "^5.2.1",
+    "morgan": "^1.10.1"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/express": "^5.0.3",
+    "@types/morgan": "^1.9.10",
+    "typescript": "^5.8.3"
+  }
+}
