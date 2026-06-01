@@ -3,11 +3,7 @@ type NodeEnv = "development" | "production" | "test";
 interface Env {
   NODE_ENV: NodeEnv;
   PORT: number;
-  DB_HOST: string;
-  DB_PORT: number;
-  DB_USER: string;
-  DB_PASSWORD: string;
-  DB_NAME: string;
+  DATABASE_URL: string;
 }
 
 const toNumber = (value: string | undefined, fallback: number): number => {
@@ -29,10 +25,9 @@ const toString = (value: string | undefined, fallback: string): string => {
 
 export const env: Env = {
   NODE_ENV: toNodeEnv(process.env.NODE_ENV),
-  PORT: toNumber(process.env.PORT, 3001),
-  DB_HOST: toString(process.env.DB_HOST, "localhost"),
-  DB_PORT: toNumber(process.env.DB_PORT, 5432),
-  DB_USER: toString(process.env.DB_USER, "tlx"),
-  DB_PASSWORD: toString(process.env.DB_PASSWORD, "tlx@admin.com"),
-  DB_NAME: toString(process.env.DB_NAME, "tlx_cloud"),
+  PORT: toNumber(process.env.PORT, 5000),
+  DATABASE_URL: toString(
+    process.env.DATABASE_URL,
+    "postgresql://tlx:tlx@admin.com@localhost:5432/tlx_cloud?schema=public",
+  ),
 };

@@ -1,7 +1,11 @@
-import express, { type NextFunction, type Request, type Response } from "express";
+import express, {
+  type NextFunction,
+  type Request,
+  type Response,
+} from "express";
 import morgan from "morgan";
 import { env } from "./config/env.js";
-import { router as healthRouter } from "./routes/health.route.js";
+import { router as userRouter } from "./routes/user.route.js";
 
 export function createServer() {
   const app = express();
@@ -15,23 +19,23 @@ export function createServer() {
     res.json({
       name: "TLX Cloud API",
       status: "ok",
-      version: "0.1.0"
+      version: "0.1.0",
     });
   });
 
-  app.use("/health", healthRouter);
+  app.use("/users", userRouter);
 
   app.use((_req: Request, res: Response) => {
     res.status(404).json({
       message: "Route not found",
-      path: _req.originalUrl
+      path: _req.originalUrl,
     });
   });
 
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     console.error(err);
     res.status(500).json({
-      message: "Internal Server Error"
+      message: "Internal Server Error",
     });
   });
 
