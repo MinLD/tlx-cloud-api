@@ -1,110 +1,82 @@
 # TLX Cloud API
 
-<<<<<<< HEAD
-TLX Cloud API là backend sử dụng **Node.js + Express + TypeScript** cho dự án TLX Cloud.
+Backend API của dự án TLX Cloud, được xây dựng bằng **Express.js + TypeScript** và chạy bằng **Bun**.  
+Dự án này cung cấp các API cho authentication, user, workspace và các module mở rộng về sau.
 
-## Tech stack
+---
 
-- Node.js
-- Express.js
-- TypeScript
-- PostgreSQL
-- Docker / Docker Compose
-- DBeaver CE
+## 1. Công nghệ sử dụng
 
-## Cấu trúc chính
+- **Runtime**: Bun
+- **Framework**: Express.js 5
+- **Language**: TypeScript
+- **ORM**: Prisma
+- **Database**: PostgreSQL
+- **Validation**: Zod
+- **Authentication**: JSON Web Token (JWT)
+- **Hash password**: bcryptjs
+- **Logging**: morgan
+- **Environment config**: dotenv
 
-```txt
-cloud/tlx-cloud-api/
-├── src/
-│   ├── config/
-│   │   └── env.ts
-│   ├── routes/
-│   │   └── health.route.ts
-│   └── server.ts
-├── docs/
-│   └── postgresql-docker-dbeaver-setup.md
-├── docker-compose.yml
-├── index.ts
-├── package.json
-├── tsconfig.json
-├── .env.example
-└── .gitignore
+---
+
+## 2. Chức năng chính
+
+- Đăng ký / đăng nhập / đăng xuất
+- Xác thực người dùng bằng JWT
+- Middleware bảo vệ route
+- Kết nối PostgreSQL bằng Prisma
+- Cấu trúc code theo module, dễ mở rộng
+- Tách rõ phần:
+  - controller
+  - service
+  - repository
+  - route
+  - shared utilities / types / errors
+
+---
+
+## 3. Yêu cầu môi trường
+
+Trước khi chạy dự án, cần có:
+
+- **Bun**: https://bun.sh
+- **Node.js**: khuyến nghị bản LTS nếu cần tương thích tool phụ trợ
+- **PostgreSQL** đang chạy
+- **Git**
+
+---
+
+## 4. Cách clone dự án
+
+```bash
+git clone https://github.com/MinLD/tlx-cloud-api.git
+cd tlx-cloud-api
 ```
 
-## Chạy project
+---
 
-### 1. Cài dependencies
-=======
-Backend API riêng cho dự án TLX, xây dựng bằng Express.js và Bun.
+## 5. Cài đặt dependencies
 
-## Giới thiệu
-
-Repo này là cloud backend tách riêng cho các chức năng:
-- Authentication
-- Workspace / Project management
-- Scan ingestion
-- Artifact storage
-- Report serving
-- Billing
-- API monitoring
-
-## Cấu trúc thư mục
-
-```text
-myapp/
-├── index.js
-├── package.json
-└── src/
-    ├── config/
-    │   └── env.js
-    ├── routes/
-    │   └── health.route.js
-    └── server.js
-```
-
-## Tên project
-
-- Package name: `tlx-cloud-api`
-- Service name: `TLX Cloud API`
-
-## Chạy dự án
-
-### Cài dependencies
->>>>>>> 939cbea220e3fc51da3156ec1ad4803c10c482d4
+Dự án dùng Bun nên cài bằng:
 
 ```bash
 bun install
 ```
 
-<<<<<<< HEAD
-### 2. Tạo file `.env`
+---
 
-Copy từ `.env.example`:
+## 6. Cấu hình biến môi trường
+
+Copy file mẫu:
 
 ```bash
 copy .env.example .env
 ```
 
-### 3. Chạy PostgreSQL bằng Docker
+Sau đó chỉnh file `.env` cho phù hợp với máy của bạn.
 
-```bash
-docker compose up -d
-```
-
-### 4. Chạy backend
-=======
-### Chạy development
->>>>>>> 939cbea220e3fc51da3156ec1ad4803c10c482d4
-
-```bash
-bun run dev
-```
-
-<<<<<<< HEAD
-## Cấu hình môi trường
-
-File `.env.example`:
+### Ví dụ `.env`
 
 ```env
 NODE_ENV=development
@@ -117,73 +89,192 @@ DB_PASSWORD=tlx@admin.com
 DB_NAME=tlx_cloud
 ```
 
-## Docker PostgreSQL
+> Lưu ý: ngoài các biến trên, project hiện tại còn có thể dùng `DATABASE_URL`, `JWT_SECRET`, `JWT_EXPIRES_IN` tùy phần cấu hình Prisma / auth trong source code.  
+> Nếu thiếu, cần kiểm tra thêm file `src/config/env.ts` và `src/lib/prisma.ts`.
 
-File `docker-compose.yml` dùng để khởi tạo PostgreSQL local cho development.
+---
 
-### Thông tin mặc định
+## 7. Chạy database
 
-- Host: `localhost`
-- Port: `5432`
-- Database: `tlx_cloud`
-- Username: `tlx`
-- Password: `tlx@admin.com`
-
-## Tài liệu database
-
-Xem hướng dẫn chi tiết tại:
-
-- `docs/postgresql-docker-dbeaver-setup.md`
-
-## Lưu ý khi push lên Git
-
-### Nên push
-- source code
-- `README.md`
-- `docs/`
-- `docker-compose.yml`
-- `.env.example`
-- `.gitignore`
-
-### Không nên push
-- `.env`
-- `node_modules`
-- `dist`
-- file log, cache, build artifacts
-
-## Health check
-
-API có route kiểm tra trạng thái:
+Nếu bạn dùng Docker Compose:
 
 ```bash
-GET /
-GET /health
+docker compose up -d
 ```
 
-## License
+Sau đó kiểm tra PostgreSQL đã sẵn sàng.
 
-Chưa khai báo.
-=======
+---
+
+## 8. Prisma
+
+Nếu cần sinh client hoặc chạy migration, dùng các lệnh Prisma phù hợp với setup hiện tại:
+
+```bash
+bunx prisma generate
+bunx prisma migrate dev
+```
+
+> Nếu bạn chỉ muốn chạy app trong môi trường đã có database sẵn, hãy đảm bảo schema và dữ liệu đã đúng.
+
+---
+
+## 9. Chạy dự án
+
+### Chạy ở chế độ development
+
+```bash
+bun run dev
+```
+
 ### Chạy production
 
 ```bash
 bun run start
 ```
 
-### Kiểm tra cú pháp
+---
+
+## 10. Kiểm tra TypeScript
+
+```bash
+bun run build
+```
+
+Lệnh này đang chạy `tsc --noEmit` để kiểm tra type.
+
+---
+
+## 11. Kiểm tra cú pháp Bun
 
 ```bash
 bun run check
 ```
 
-## API hiện có
+---
 
-- `GET /` - thông tin service
-- `GET /health` - health check
+## 12. Cấu trúc dự án
 
-## Ghi chú
+```bash
+src/
+├── config/
+│   └── env.ts
+├── controller/
+│   ├── auth.controller.ts
+│   └── user.controller.ts
+├── generated/
+│   └── prisma/
+├── lib/
+│   └── prisma.ts
+├── middleware/
+│   └── auth.middleware.ts
+├── modules/
+│   └── auth/
+├── repositories/
+│   └── user.repository.ts
+├── routes/
+│   ├── auth.route.ts
+│   └── user.route.ts
+├── services/
+│   ├── auth.service.ts
+│   └── user.service.ts
+├── shared/
+│   ├── errors/
+│   ├── types/
+│   ├── utils/
+│   └── validation/
+└── server.ts
+```
 
-- Dự án đang dùng JavaScript module style (`type: module`)
-- Cấu trúc hiện tại đã chuẩn hóa để mở rộng thêm `controllers`, `services`, `middlewares`, `models`, `validators`
-- Đây là repo backend cloud riêng, tách khỏi CLI scanner và frontend dashboard
->>>>>>> 939cbea220e3fc51da3156ec1ad4803c10c482d4
+---
+
+## 13. Giải thích cấu trúc thư mục
+
+### `src/config`
+Chứa các cấu hình runtime của ứng dụng, ví dụ:
+- đọc biến môi trường
+- cấu hình mặc định
+- runtime config dùng toàn app
+
+### `src/lib`
+Chứa các instance / adapter của thư viện bên ngoài, ví dụ:
+- Prisma client
+- kết nối database
+- các singleton hoặc wrapper hạ tầng
+
+### `src/controller`
+Nhận request từ route và trả response cho client.  
+Controller chỉ nên xử lý:
+- input từ request
+- gọi service
+- trả status / data / error
+
+### `src/services`
+Chứa business logic chính của app.  
+Đây là nơi xử lý nghiệp vụ, không nên gắn trực tiếp với Express request/response.
+
+### `src/repositories`
+Chứa tầng truy vấn dữ liệu, làm việc với database thông qua Prisma.
+
+### `src/routes`
+Khai báo route của Express và gắn middleware/controller.
+
+### `src/middleware`
+Chứa middleware của Express như:
+- auth guard
+- logger
+- xử lý lỗi
+- parse request liên quan đến auth
+
+### `src/modules`
+Chứa các module theo feature.  
+Hiện tại có module `auth`, có thể mở rộng thêm các module khác sau này.
+
+### `src/shared`
+Chứa các phần dùng chung toàn project:
+- `errors`: custom error classes
+- `types`: type dùng chung
+- `utils`: helper functions dùng chung
+- `validation`: schema validation dùng chung
+
+### `src/generated`
+Chứa code generated từ Prisma.  
+Không nên sửa tay nếu đây là output generated.
+
+---
+
+## 14. Luồng chạy cơ bản của app
+
+1. `server.ts` khởi động server
+2. `config/env.ts` đọc biến môi trường
+3. `lib/prisma.ts` khởi tạo Prisma client
+4. Route nhận request
+5. Controller xử lý request
+6. Service xử lý nghiệp vụ
+7. Repository thao tác database
+8. Response được trả về client
+
+---
+
+## 15. Quy ước code hiện tại
+
+- Dùng **ES Modules**
+- Dùng **TypeScript**
+- Dùng **zod** để validate input
+- Tách logic theo layers rõ ràng
+- Ưu tiên code ngắn, dễ đọc, dễ mở rộng
+
+---
+
+## 16. Ghi chú
+
+- Nếu dự án thay đổi structure hoặc thêm module mới, hãy cập nhật lại README này để đồng bộ.
+- Không nên sửa trực tiếp file trong `src/generated` nếu đó là code được generate.
+- Nếu thay đổi schema Prisma, nhớ chạy lại generate/migrate.
+
+---
+
+## 17. Tác giả / Project
+
+- Project: **TLX Cloud API**
+- Stack: **Express.js + TypeScript + Prisma + PostgreSQL**

@@ -4,6 +4,8 @@ interface Env {
   NODE_ENV: NodeEnv;
   PORT: number;
   DATABASE_URL: string;
+  JWT_SECRET: string;
+  JWT_EXPIRES_IN: string;
 }
 
 const toNumber = (value: string | undefined, fallback: number): number => {
@@ -26,8 +28,7 @@ const toString = (value: string | undefined, fallback: string): string => {
 export const env: Env = {
   NODE_ENV: toNodeEnv(process.env.NODE_ENV),
   PORT: toNumber(process.env.PORT, 5000),
-  DATABASE_URL: toString(
-    process.env.DATABASE_URL,
-    "postgresql://tlx:tlx@admin.com@localhost:5432/tlx_cloud?schema=public",
-  ),
+  JWT_SECRET: toString(process.env.JWT_SECRET, ""),
+  DATABASE_URL: toString(process.env.DATABASE_URL, ""),
+  JWT_EXPIRES_IN: toString(process.env.JWT_EXPIRES_IN, ""),
 };
