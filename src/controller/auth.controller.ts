@@ -10,6 +10,7 @@ import type {
 } from "../shared/types/auth.type.js";
 import { authService } from "../services/auth.service.js";
 import { clearAuthCookie, setAuthCookie } from "../shared/utils/authCookie.js";
+import { sendApiResponse } from "../shared/utils/apiResponse.js";
 
 type RegisterRequest = Request<unknown, unknown, RegisterBody>;
 type LoginRequest = Request<unknown, unknown, LoginBody>;
@@ -21,11 +22,7 @@ const register = async (req: RegisterRequest, res: Response<RegisterApiResponse>
   try {
     const user = await authService.register(req.body);
 
-    return res.status(201).json({
-      success: true,
-      message: "User registered successfully",
-      data: user,
-    });
+    return sendApiResponse(res, 201, "User registered successfully", user);
   } catch (error) {
     if (error instanceof AuthError && error.code === "USER_ALREADY_EXISTS") {
       throw new HttpError(409, "CONFLICT", "User already exists with this email");
@@ -40,11 +37,7 @@ const login = async (req: LoginRequest, res: Response<LoginApiResponse>) => {
     const result = await authService.login(req.body);
     setAuthCookie(res, result.accessToken);
 
-    return res.status(200).json({
-      success: true,
-      message: "Login successful",
-      data: result,
-    });
+    return sendApiResponse(res, 200, "Login successful", result);
   } catch (error) {
     if (error instanceof AuthError && error.code === "INVALID_EMAIL") {
       throw new HttpError(401, "UNAUTHORIZED", "Invalid email");
@@ -61,11 +54,7 @@ const login = async (req: LoginRequest, res: Response<LoginApiResponse>) => {
 const logout = async (_req: Request, res: Response<ApiResponse<null>>) => {
   clearAuthCookie(res);
 
-  return res.status(200).json({
-    success: true,
-    message: "Logout successful",
-    data: null,
-  });
+  return sendApiResponse(res, 200, "Logout successful", null);
 };
 
 export { register, login, logout };

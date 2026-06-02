@@ -17,6 +17,7 @@ Dự án này cung cấp các API cho authentication, user, workspace và các m
 - **Hash password**: bcryptjs
 - **Logging**: morgan
 - **Environment config**: dotenv
+- **Reusable response helper**: custom shared API response utility
 
 ---
 
@@ -234,7 +235,11 @@ Hiện tại có module `auth`, có thể mở rộng thêm các module khác sa
 Chứa các phần dùng chung toàn project:
 - `errors`: custom error classes
 - `types`: type dùng chung
-- `utils`: helper functions dùng chung
+- `utils`: helper functions dùng chung, ví dụ:
+  - `apiResponse.ts`
+  - `authCookie.ts`
+  - `asyncHandler.ts`
+  - `generateToken.ts`
 - `validation`: schema validation dùng chung
 
 ### `src/generated`
@@ -261,6 +266,7 @@ Không nên sửa tay nếu đây là output generated.
 - Dùng **ES Modules**
 - Dùng **TypeScript**
 - Dùng **zod** để validate input
+- Dùng helper response dùng chung để thống nhất format JSON
 - Tách logic theo layers rõ ràng
 - Ưu tiên code ngắn, dễ đọc, dễ mở rộng
 
