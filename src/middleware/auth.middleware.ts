@@ -1,48 +1,38 @@
-import jwt from "jsonwebtoken";
 import type { NextFunction, Request, Response } from "express";
-import { prisma } from "../lib/prisma.js";
-import { env } from "../config/env.js";
-import type { JwtPayload } from "../shared/types/jwt.type.js";
+import { AUTH_COOKIE_NAME } from "../modules/auth/auth.cookie.js";
+import { authService } from "../modules/auth/auth.service.js";
+import { HttpError } from "../shared/errors/http.error.js";
+
+const getBearerToken = (req: Request): string | undefined => {
+  const authorization = req.headers.authorization;
+
+  if (!authorization?.startsWith("Bearer ")) {
+    return undefined;
+  }
+
+  return authorization.slice("Bearer ".length).trim() || undefined;
+};
+
+const getCookieToken = (req: Request): string | undefined => {
+  const cookies = req.cookies as Record<string, string | undefined> | undefined;
+  return cookies?.[AUTH_COOKIE_NAME];
+};
 
 export const authMiddleware = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction,
 ) => {
-  const bearerToken = req.headers.authorization?.startsWith("Bearer ")
-    ? req.headers.authorization.split(" ")[1]
-    : undefined;
-
-  const cookieToken = req.cookies?.jwt as string | undefined;
-  const token = bearerToken ?? cookieToken;
-
-  if (!token) {
-    return res.status(401).json({
-      success: false,
-      message: "Unauthorized: No token provided",
-    });
-  }
-
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
+    const token = getBearerToken(req) ?? getCookieToken(req);
 
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
-    });
-
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "User no longer exists",
-      });
+    if (!token) {
+      throw new HttpError(401, "UNAUTHORIZED", "Unauthorized: No token provided");
     }
 
-    req.user = user;
+    req.user = await authService.authenticateAccessToken(token);
     return next();
-  } catch {
-    return res.status(401).json({
-      success: false,
-      message: "Unauthorized: token failed",
-    });
+  } catch (error) {
+    return next(error);
   }
 };

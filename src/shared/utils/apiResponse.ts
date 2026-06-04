@@ -14,6 +14,7 @@ export const sendApiResponse = <T>(
   });
 };
 
+
 export const sendApiError = (
   res: Response<ApiResponse<null>>,
   statusCode: number,

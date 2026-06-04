@@ -83,15 +83,13 @@ Sau đó chỉnh file `.env` cho phù hợp với máy của bạn.
 NODE_ENV=development
 PORT=3001
 
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=tlx
-DB_PASSWORD=tlx@admin.com
-DB_NAME=tlx_cloud
+DATABASE_URL=postgresql://tlx:tlx@localhost:5432/tlx_cloud
+JWT_SECRET=change-me
+JWT_EXPIRES_IN=7d
+CORS_ORIGINS=http://localhost:3000,http://localhost:5173
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX=100
 ```
-
-> Lưu ý: ngoài các biến trên, project hiện tại còn có thể dùng `DATABASE_URL`, `JWT_SECRET`, `JWT_EXPIRES_IN` tùy phần cấu hình Prisma / auth trong source code.  
-> Nếu thiếu, cần kiểm tra thêm file `src/config/env.ts` và `src/lib/prisma.ts`.
 
 ---
 
@@ -112,7 +110,7 @@ Sau đó kiểm tra PostgreSQL đã sẵn sàng.
 Nếu cần sinh client hoặc chạy migration, dùng các lệnh Prisma phù hợp với setup hiện tại:
 
 ```bash
-bunx prisma generate
+bun run prisma:generate
 bunx prisma migrate dev
 ```
 
@@ -142,14 +140,15 @@ bun run start
 bun run build
 ```
 
-Lệnh này đang chạy `tsc --noEmit` để kiểm tra type.
+Lệnh này chạy `prisma generate` rồi `tsc --noEmit` để kiểm tra type.
 
 ---
 
-## 11. Kiểm tra cú pháp Bun
+## 11. Kiểm tra cú pháp Bun và test
 
 ```bash
 bun run check
+bun test
 ```
 
 ---
@@ -160,25 +159,33 @@ bun run check
 src/
 ├── config/
 │   └── env.ts
-├── controller/
-│   ├── auth.controller.ts
-│   └── user.controller.ts
 ├── generated/
 │   └── prisma/
 ├── lib/
 │   └── prisma.ts
 ├── middleware/
-│   └── auth.middleware.ts
+│   ├── auth.middleware.ts
+│   ├── cors.middleware.ts
+│   ├── error.middleware.ts
+│   ├── logger.middleware.ts
+│   ├── rateLimit.middleware.ts
+│   ├── requestId.middleware.ts
+│   └── security.middleware.ts
 ├── modules/
-│   └── auth/
-├── repositories/
-│   └── user.repository.ts
-├── routes/
-│   ├── auth.route.ts
-│   └── user.route.ts
-├── services/
-│   ├── auth.service.ts
-│   └── user.service.ts
+│   ├── auth/
+│   │   ├── auth.controller.ts
+│   │   ├── auth.dto.ts
+│   │   ├── auth.route.ts
+│   │   ├── auth.schema.ts
+│   │   └── auth.service.ts
+│   └── users/
+│       ├── user.controller.ts
+│       ├── user.dto.ts
+│       ├── user.mapper.ts
+│       ├── user.repository.ts
+│       ├── user.route.ts
+│       ├── user.schema.ts
+│       └── user.service.ts
 ├── shared/
 │   ├── errors/
 │   ├── types/
@@ -203,43 +210,33 @@ Chứa các instance / adapter của thư viện bên ngoài, ví dụ:
 - kết nối database
 - các singleton hoặc wrapper hạ tầng
 
-### `src/controller`
-Nhận request từ route và trả response cho client.  
-Controller chỉ nên xử lý:
-- input từ request
-- gọi service
-- trả status / data / error
-
-### `src/services`
-Chứa business logic chính của app.  
-Đây là nơi xử lý nghiệp vụ, không nên gắn trực tiếp với Express request/response.
-
-### `src/repositories`
-Chứa tầng truy vấn dữ liệu, làm việc với database thông qua Prisma.
-
-### `src/routes`
-Khai báo route của Express và gắn middleware/controller.
-
 ### `src/middleware`
-Chứa middleware của Express như:
+Chứa Express middleware dùng chung toàn app hoặc dùng lặp lại ở nhiều module, ví dụ:
 - auth guard
-- logger
-- xử lý lỗi
-- parse request liên quan đến auth
+- logging
+- rate limit
+- security headers
+- CORS
+- request id / request context
+- global 404 / error handler
 
 ### `src/modules`
-Chứa các module theo feature.  
-Hiện tại có module `auth`, có thể mở rộng thêm các module khác sau này.
+Chứa code theo feature. Mỗi module tự quản route, controller, service, repository, schema, DTO và mapper nếu cần.
+
+Quy ước trong module:
+- `*.route.ts`: khai báo Express route
+- `*.controller.ts`: nhận request, gọi service, trả response
+- `*.service.ts`: xử lý nghiệp vụ
+- `*.repository.ts`: thao tác database qua Prisma
+- `*.schema.ts`: Zod schema validate request
+- `*.dto.ts`: request/response DTO, ưu tiên derive bằng `z.infer`
+- `*.mapper.ts`: map database record sang API response, tránh leak field nhạy cảm
 
 ### `src/shared`
 Chứa các phần dùng chung toàn project:
-- `errors`: custom error classes
+- `errors`: custom error classes như `HttpError`
 - `types`: type dùng chung
-- `utils`: helper functions dùng chung, ví dụ:
-  - `apiResponse.ts`
-  - `authCookie.ts`
-  - `asyncHandler.ts`
-  - `generateToken.ts`
+- `utils`: helper functions dùng chung như `apiResponse.ts`, `asyncHandler.ts`
 - `validation`: schema validation dùng chung
 
 ### `src/generated`
@@ -259,6 +256,12 @@ Không nên sửa tay nếu đây là output generated.
 7. Repository thao tác database
 8. Response được trả về client
 
+Public API hiện tại dùng prefix `/api/v1`, ví dụ:
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/logout`
+- `GET /api/v1/users`
+
 ---
 
 ## 15. Quy ước code hiện tại
@@ -267,7 +270,7 @@ Không nên sửa tay nếu đây là output generated.
 - Dùng **TypeScript**
 - Dùng **zod** để validate input
 - Dùng helper response dùng chung để thống nhất format JSON
-- Tách logic theo layers rõ ràng
+- Tách logic theo module-first, mỗi feature tự chứa layer của nó
 - Ưu tiên code ngắn, dễ đọc, dễ mở rộng
 
 ---
