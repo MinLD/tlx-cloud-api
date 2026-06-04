@@ -1,21 +1,27 @@
-import express, {
-  type NextFunction,
-  type Request,
-  type Response,
-} from "express";
-import morgan from "morgan";
+import cookieParser from "cookie-parser";
+import express, { type Request, type Response } from "express";
 import { env } from "./config/env.js";
-import { router as userRouter } from "./routes/user.route.js";
-import { router as authRouter } from "./routes/auth.route.js";
-import type { ApiResponse } from "./shared/types/api.type.js";
+import { corsMiddleware } from "./middleware/cors.middleware.js";
+import { errorHandler, notFoundHandler } from "./middleware/error.middleware.js";
+import { loggerMiddleware } from "./middleware/logger.middleware.js";
+import { rateLimitMiddleware } from "./middleware/rateLimit.middleware.js";
+import { requestIdMiddleware } from "./middleware/requestId.middleware.js";
+import { securityMiddleware } from "./middleware/security.middleware.js";
+import { authRouter } from "./modules/auth/auth.route.js";
+import { userRouter } from "./modules/users/user.route.js";
 
 export function createServer() {
   const app = express();
 
   app.disable("x-powered-by");
+  app.use(requestIdMiddleware);
+  app.use(securityMiddleware);
+  app.use(corsMiddleware);
   app.use(express.json({ limit: "2mb" }));
   app.use(express.urlencoded({ extended: true }));
-  app.use(morgan(env.NODE_ENV === "production" ? "combined" : "dev"));
+  app.use(cookieParser());
+  app.use(rateLimitMiddleware);
+  app.use(loggerMiddleware);
 
   app.get("/", (_req: Request, res: Response) => {
     res.json({
@@ -25,31 +31,11 @@ export function createServer() {
     });
   });
 
-  app.use("/users", userRouter);
-  app.use("/auth", authRouter);
+  app.use("/api/v1/auth", authRouter);
+  app.use("/api/v1/users", userRouter);
 
-  app.use((_req: Request, res: Response<ApiResponse<null>>) => {
-    return res.status(404).json({
-      success: false,
-      message: "Route not found",
-      data: null,
-      error: {
-        path: _req.originalUrl,
-      },
-    });
-  });
-
-  app.use(
-    (err: unknown, _req: Request, res: Response<ApiResponse<null>>, _next: NextFunction) => {
-      console.error(err);
-      return res.status(500).json({
-        success: false,
-        message: "Internal Server Error",
-        data: null,
-        error: err instanceof Error ? err.message : "Unknown error",
-      });
-    },
-  );
+  app.use(notFoundHandler);
+  app.use(errorHandler);
 
   return app;
 }

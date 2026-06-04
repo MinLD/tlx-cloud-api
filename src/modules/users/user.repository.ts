@@ -1,9 +1,8 @@
-import { prisma } from "../lib/prisma.js";
-import type { Prisma } from "../generated/prisma/client.js";
-import type { GetUsersResponse } from "../shared/types/user.type.js";
+import { prisma } from "../../lib/prisma.js";
+import type { Prisma } from "../../generated/prisma/client.js";
 
 export const userRepository = {
-  findAll(): Promise<GetUsersResponse> {
+  findAll() {
     return prisma.user.findMany({
       select: {
         id: true,
@@ -14,6 +13,12 @@ export const userRepository = {
       orderBy: {
         createdAt: "desc",
       },
+    });
+  },
+
+  findById(id: string) {
+    return prisma.user.findUnique({
+      where: { id },
     });
   },
 
