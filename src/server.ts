@@ -1,6 +1,5 @@
 import cookieParser from "cookie-parser";
 import express, { type Request, type Response } from "express";
-import { env } from "./config/env.js";
 import { corsMiddleware } from "./middleware/cors.middleware.js";
 import { errorHandler, notFoundHandler } from "./middleware/error.middleware.js";
 import { loggerMiddleware } from "./middleware/logger.middleware.js";

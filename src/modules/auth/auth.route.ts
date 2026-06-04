@@ -8,4 +8,5 @@ export const authRouter = Router();
 
 authRouter.post("/register", validateBody(registerBodySchema), asyncHandler(authController.register));
 authRouter.post("/login", validateBody(loginBodySchema), asyncHandler(authController.login));
+authRouter.post("/refresh", asyncHandler(authController.refresh));
 authRouter.post("/logout", asyncHandler(authController.logout));
