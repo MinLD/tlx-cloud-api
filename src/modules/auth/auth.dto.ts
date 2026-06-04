@@ -12,4 +12,9 @@ export type RegisterResponseDto = AuthUserResponseDto;
 
 export type LoginResponseDto = {
   accessToken: string;
+  refreshToken: string;
+};
+
+export type RefreshResponseDto = {
+  accessToken: string;
 };

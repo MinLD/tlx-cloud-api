@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { AUTH_COOKIE_NAME } from "../modules/auth/auth.cookie.js";
+import { ACCESS_COOKIE_NAME } from "../modules/auth/auth.cookie.js";
 import { authService } from "../modules/auth/auth.service.js";
 import { HttpError } from "../shared/errors/http.error.js";
 
@@ -15,7 +15,7 @@ const getBearerToken = (req: Request): string | undefined => {
 
 const getCookieToken = (req: Request): string | undefined => {
   const cookies = req.cookies as Record<string, string | undefined> | undefined;
-  return cookies?.[AUTH_COOKIE_NAME];
+  return cookies?.[ACCESS_COOKIE_NAME];
 };
 
 export const authMiddleware = async (

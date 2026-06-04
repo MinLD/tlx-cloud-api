@@ -1,21 +1,36 @@
 import type { Response } from "express";
 import { env } from "../../config/env.js";
 
-export const AUTH_COOKIE_NAME = "jwt";
+export const ACCESS_COOKIE_NAME = "accessToken";
+export const REFRESH_COOKIE_NAME = "refreshToken";
 
-const AUTH_COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
+const ACCESS_COOKIE_MAX_AGE = 15 * 60 * 1000;
+const REFRESH_COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 
-export const setAuthCookie = (res: Response, token: string) => {
-  res.cookie(AUTH_COOKIE_NAME, token, {
+const cookieOptions = (maxAge: number) => ({
+  httpOnly: true,
+  secure: env.NODE_ENV === "production",
+  sameSite: "strict" as const,
+  maxAge,
+});
+
+export const setAccessTokenCookie = (res: Response, token: string) => {
+  res.cookie(ACCESS_COOKIE_NAME, token, cookieOptions(ACCESS_COOKIE_MAX_AGE));
+};
+
+export const setRefreshTokenCookie = (res: Response, token: string) => {
+  res.cookie(REFRESH_COOKIE_NAME, token, cookieOptions(REFRESH_COOKIE_MAX_AGE));
+};
+
+export const clearAuthCookies = (res: Response) => {
+  res.cookie(ACCESS_COOKIE_NAME, "", {
     httpOnly: true,
     secure: env.NODE_ENV === "production",
     sameSite: "strict",
-    maxAge: AUTH_COOKIE_MAX_AGE,
+    expires: new Date(0),
   });
-};
 
-export const clearAuthCookie = (res: Response) => {
-  res.cookie(AUTH_COOKIE_NAME, "", {
+  res.cookie(REFRESH_COOKIE_NAME, "", {
     httpOnly: true,
     secure: env.NODE_ENV === "production",
     sameSite: "strict",

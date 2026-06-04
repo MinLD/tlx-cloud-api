@@ -8,6 +8,8 @@ interface Env {
   DATABASE_URL: string;
   JWT_SECRET: string;
   JWT_EXPIRES_IN: string;
+  JWT_REFRESH_SECRET: string;
+  JWT_REFRESH_EXPIRES_IN: string;
   CORS_ORIGINS: string[];
   RATE_LIMIT_WINDOW_MS: number;
   RATE_LIMIT_MAX: number;
@@ -43,6 +45,8 @@ export const env: Env = {
   JWT_SECRET: toString(process.env.JWT_SECRET, ""),
   DATABASE_URL: toString(process.env.DATABASE_URL, ""),
   JWT_EXPIRES_IN: toString(process.env.JWT_EXPIRES_IN, ""),
+  JWT_REFRESH_SECRET: toString(process.env.JWT_REFRESH_SECRET, ""),
+  JWT_REFRESH_EXPIRES_IN: toString(process.env.JWT_REFRESH_EXPIRES_IN, ""),
   CORS_ORIGINS: toStringList(process.env.CORS_ORIGINS),
   RATE_LIMIT_WINDOW_MS: toNumber(process.env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
   RATE_LIMIT_MAX: toNumber(process.env.RATE_LIMIT_MAX, 100),

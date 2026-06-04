@@ -8,6 +8,7 @@ import type {
   AuthUserResponseDto,
   LoginBodyDto,
   LoginResponseDto,
+  RefreshResponseDto,
   RegisterBodyDto,
   RegisterResponseDto,
 } from "./auth.dto.js";
@@ -22,7 +23,7 @@ const toAuthUserResponseDto = (user: Pick<User, "id" | "name" | "email">): AuthU
   email: user.email,
 });
 
-const generateToken = (userId: string) => {
+const generateAccessToken = (userId: string) => {
   const options: SignOptions = {
     expiresIn: env.JWT_EXPIRES_IN as SignOptions["expiresIn"],
   };
@@ -30,9 +31,35 @@ const generateToken = (userId: string) => {
   return jwt.sign({ id: userId }, env.JWT_SECRET, options);
 };
 
-const verifyToken = (token: string): JwtPayload => {
+const generateRefreshToken = (userId: string) => {
+  const options: SignOptions = {
+    expiresIn: env.JWT_REFRESH_EXPIRES_IN as SignOptions["expiresIn"],
+  };
+
+  return jwt.sign({ id: userId }, env.JWT_REFRESH_SECRET, options);
+};
+
+const verifyAccessToken = (token: string): JwtPayload => {
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET);
+
+    if (typeof decoded !== "object" || typeof decoded.id !== "string") {
+      throw new AuthError("INVALID_TOKEN");
+    }
+
+    return { id: decoded.id };
+  } catch (error) {
+    if (error instanceof AuthError) {
+      throw error;
+    }
+
+    throw new AuthError("INVALID_TOKEN");
+  }
+};
+
+const verifyRefreshToken = (token: string): JwtPayload => {
+  try {
+    const decoded = jwt.verify(token, env.JWT_REFRESH_SECRET);
 
     if (typeof decoded !== "object" || typeof decoded.id !== "string") {
       throw new AuthError("INVALID_TOKEN");
@@ -83,12 +110,26 @@ export const authService = {
     }
 
     return {
-      accessToken: generateToken(user.id),
+      accessToken: generateAccessToken(user.id),
+      refreshToken: generateRefreshToken(user.id),
+    };
+  },
+
+  async refresh(token: string): Promise<RefreshResponseDto> {
+    const payload = verifyRefreshToken(token);
+    const user = await userRepository.findById(payload.id);
+
+    if (!user) {
+      throw new AuthError("USER_NOT_FOUND");
+    }
+
+    return {
+      accessToken: generateAccessToken(user.id),
     };
   },
 
   async authenticateAccessToken(token: string): Promise<User> {
-    const payload = verifyToken(token);
+    const payload = verifyAccessToken(token);
     const user = await userRepository.findById(payload.id);
 
     if (!user) {
