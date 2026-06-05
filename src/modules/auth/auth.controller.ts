@@ -9,6 +9,7 @@ import type {
   RefreshResponseDto,
   RegisterBodyDto,
   RegisterResponseDto,
+  IdentityResponseDto,
 } from "./auth.dto.js";
 import { authService } from "./auth.service.js";
 
@@ -45,5 +46,13 @@ export const authController = {
   async logout(_req: Request, res: Response<ApiResponse<null>>) {
     clearAuthCookies(res);
     return sendApiResponse(res, 200, "Logout successful", null);
+  },
+
+  async me(req: Request, res: Response<ApiResponse<IdentityResponseDto>>) {
+    if (!req.identity) {
+      throw new HttpError(401, "UNAUTHORIZED", "Unauthorized: No identity found");
+    }
+
+    return sendApiResponse(res, 200, "Get identity successfully", req.identity);
   },
 };

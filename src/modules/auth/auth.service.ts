@@ -6,6 +6,7 @@ import { userRepository } from "../users/user.repository.js";
 import { AuthError } from "./auth.error.js";
 import type {
   AuthUserResponseDto,
+  IdentityResponseDto,
   LoginBodyDto,
   LoginResponseDto,
   RefreshResponseDto,
@@ -16,6 +17,8 @@ import type {
 type JwtPayload = {
   id: string;
 };
+
+type IdentityUser = NonNullable<Awaited<ReturnType<typeof userRepository.findIdentityById>>>;
 
 const toAuthUserResponseDto = (user: Pick<User, "id" | "name" | "email">): AuthUserResponseDto => ({
   id: user.id,
@@ -75,6 +78,23 @@ const verifyRefreshToken = (token: string): JwtPayload => {
   }
 };
 
+const toIdentityResponseDto = (user: IdentityUser): IdentityResponseDto => {
+  const roles = user.roles.map((userRole) => userRole.roleName);
+  const permissions = [
+    ...new Set(
+      user.roles.flatMap((userRole) =>
+        userRole.role.permissions.map((permission) => permission.permissionName),
+      ),
+    ),
+  ];
+
+  return {
+    user: toAuthUserResponseDto(user),
+    roles,
+    permissions,
+  };
+};
+
 export const authService = {
   async register(body: RegisterBodyDto): Promise<RegisterResponseDto> {
     const { name, email, password } = body;
@@ -128,14 +148,14 @@ export const authService = {
     };
   },
 
-  async authenticateAccessToken(token: string): Promise<User> {
+  async authenticateAccessToken(token: string): Promise<IdentityResponseDto> {
     const payload = verifyAccessToken(token);
-    const user = await userRepository.findById(payload.id);
+    const user = await userRepository.findIdentityById(payload.id);
 
     if (!user) {
       throw new AuthError("USER_NOT_FOUND");
     }
 
-    return user;
+    return toIdentityResponseDto(user);
   },
 };

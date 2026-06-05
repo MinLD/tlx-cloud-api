@@ -30,7 +30,10 @@ export const authMiddleware = async (
       throw new HttpError(401, "UNAUTHORIZED", "Unauthorized: No token provided");
     }
 
-    req.user = await authService.authenticateAccessToken(token);
+    const identity = await authService.authenticateAccessToken(token);
+    req.identity = identity;
+    req.user = identity.user;
+
     return next();
   } catch (error) {
     return next(error);

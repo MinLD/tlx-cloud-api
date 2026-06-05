@@ -1,10 +1,12 @@
-import type { User } from "../../generated/prisma/client.js";
+import type { IdentityResponseDto } from "../../modules/auth/auth.dto.js";
 
 declare global {
   namespace Express {
     interface Request {
-      user?: User;
+      identity?: IdentityResponseDto;
+      user?: IdentityResponseDto["user"];
       requestId?: string;
+      validatedQuery?: unknown;
     }
   }
 }

@@ -18,3 +18,9 @@ export type LoginResponseDto = {
 export type RefreshResponseDto = {
   accessToken: string;
 };
+
+export type IdentityResponseDto = {
+  user: AuthUserResponseDto;
+  roles: string[];
+  permissions: string[];
+};

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { authMiddleware } from "../../middleware/auth.middleware.js";
 import { asyncHandler } from "../../shared/utils/asyncHandler.js";
 import { validateBody } from "../../shared/validation/validation.js";
 import { authController } from "./auth.controller.js";
@@ -10,3 +11,4 @@ authRouter.post("/register", validateBody(registerBodySchema), asyncHandler(auth
 authRouter.post("/login", validateBody(loginBodySchema), asyncHandler(authController.login));
 authRouter.post("/refresh", asyncHandler(authController.refresh));
 authRouter.post("/logout", asyncHandler(authController.logout));
+authRouter.get("/me", authMiddleware, asyncHandler(authController.me));
