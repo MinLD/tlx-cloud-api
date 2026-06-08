@@ -16,6 +16,8 @@ model User {
   updatedAt        DateTime           @updatedAt
 
   workspaceMembers WorkspaceMember[]
+  sentWorkspaceInvitations WorkspaceInvitation[] @relation("WorkspaceInvitationInvitedBy")
+  invitedWorkspaceInvitations WorkspaceInvitation[] @relation("WorkspaceInvitationInvitedUser")  
 
   @@map("users")
 }
@@ -28,6 +30,7 @@ model Workspace {
   updatedAt DateTime           @updatedAt
 
   members   WorkspaceMember[]
+  invitations WorkspaceInvitation[]
   projects  Project[]
   roles     Role[]
 
@@ -78,12 +81,31 @@ model Project {
   @@map("projects")
 }
 
+enum PermissionScope {
+  SYSTEM
+  WORKSPACE
+}
+
+enum RoleScope {
+  SYSTEM
+  WORKSPACE
+}
+enum WorkspaceInvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  REVOKED
+  EXPIRED
+}
+
+
 model Permission {
-  id          String   @id @default(uuid()) @db.Uuid
-  key         String   @unique
+  id          String          @id @default(uuid()) @db.Uuid
+  key         String          @unique
   description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  scope       PermissionScope @default(WORKSPACE)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   rolePermissions RolePermission[]
 
@@ -91,18 +113,20 @@ model Permission {
 }
 
 model Role {
-  id          String   @id @default(uuid()) @db.Uuid
-  workspaceId String?  @db.Uuid
+  id          String    @id @default(uuid()) @db.Uuid
+  workspaceId String?   @db.Uuid
   name        String
   description String?
-  isSystem    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isSystem    Boolean   @default(false)
+  scope       RoleScope @default(WORKSPACE)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   workspace       Workspace?       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   rolePermissions RolePermission[]
   members         WorkspaceMemberRole[]
-
+  invitationRoles WorkspaceInvitationRole[]
+  
   @@unique([workspaceId, name])
   @@map("roles")
 }
@@ -119,4 +143,43 @@ model RolePermission {
 
   @@unique([roleId, permissionId])
   @@map("role_permissions")
+}
+
+model WorkspaceInvitation {
+  id            String                    @id @default(uuid()) @db.Uuid
+  workspaceId   String                    @db.Uuid
+  invitedById   String                    @db.Uuid
+  invitedUserId String?                   @db.Uuid
+  email         String
+  status        WorkspaceInvitationStatus @default(PENDING)
+  token         String                    @unique
+  expiresAt     DateTime?
+  acceptedAt    DateTime?
+  rejectedAt    DateTime?
+  revokedAt     DateTime?
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  invitedBy    User      @relation("WorkspaceInvitationInvitedBy", fields: [invitedById], references: [id], onDelete: Cascade)
+  invitedUser  User?     @relation("WorkspaceInvitationInvitedUser", fields: [invitedUserId], references: [id], onDelete: SetNull)
+  roles       WorkspaceInvitationRole[]
+
+  @@index([workspaceId, status])
+  @@index([email])
+  @@map("workspace_invitations")
+}
+
+model WorkspaceInvitationRole {
+  id           String   @id @default(uuid()) @db.Uuid
+  invitationId String   @db.Uuid
+  roleId       String   @db.Uuid
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  invitation WorkspaceInvitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  role       Role                @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([invitationId, roleId])
+  @@map("workspace_invitation_roles")
 }

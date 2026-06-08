@@ -1,7 +1,10 @@
 import cookieParser from "cookie-parser";
 import express, { type Request, type Response } from "express";
 import { corsMiddleware } from "./middleware/cors.middleware.js";
-import { errorHandler, notFoundHandler } from "./middleware/error.middleware.js";
+import {
+  errorHandler,
+  notFoundHandler,
+} from "./middleware/error.middleware.js";
 import { loggerMiddleware } from "./middleware/logger.middleware.js";
 import { rateLimitMiddleware } from "./middleware/rateLimit.middleware.js";
 import { requestIdMiddleware } from "./middleware/requestId.middleware.js";
@@ -10,6 +13,7 @@ import { authRouter } from "./modules/auth/auth.route.js";
 import { rbacRouter } from "./modules/rbac/rbac.route.js";
 import { userRouter } from "./modules/users/user.route.js";
 import { workspaceRouter } from "./modules/workspaces/workspace.route.js";
+import { memberRouter } from "./modules/members/member.route.js";
 
 export function createServer() {
   const app = express();
@@ -36,6 +40,7 @@ export function createServer() {
   app.use("/api/v1/users", userRouter);
   app.use("/api/v1/workspaces", workspaceRouter);
   app.use("/api/v1/rbac", rbacRouter);
+  app.use("/api/v1/members", memberRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

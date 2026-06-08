@@ -1,9 +1,6 @@
 import { Router } from "express";
 import { authMiddleware } from "../../middleware/auth.middleware.js";
-import {
-  requirePermission,
-  requireRole,
-} from "../../middleware/rbac.middleware.js";
+import { requirePermission } from "../../middleware/rbac.middleware.js";
 import { asyncHandler } from "../../shared/utils/asyncHandler.js";
 import { PERMISSIONS } from "../../shared/permissions/permission.keys.js";
 import { rbacController } from "./rbac.controller.js";
@@ -42,8 +39,7 @@ rbacRouter.patch(
 
 rbacRouter.get(
   "/permissions",
-  rbacController.getPermissions,
-  requirePermission(PERMISSIONS.ROLE_READ),
+  asyncHandler(rbacController.getPermissions),
 );
 
 rbacRouter.get(

@@ -1,4 +1,4 @@
-import { DEFAULT_ROLE_NAMES } from "../../shared/permissions/default-roles.js";
+import { DEFAULT_WORKSPACE_ROLE_NAMES } from "../../shared/permissions/default-roles.js";
 import type { Prisma } from "../../generated/prisma/client.js";
 import { HttpError } from "../../shared/errors/http.error.js";
 import type {
@@ -71,7 +71,10 @@ export const workspaceService = {
 
     await ensureSlugUnique(slug);
 
-    const ownerRole = await rbacRepository.findRoleByName(null, DEFAULT_ROLE_NAMES.OWNER);
+    const ownerRole = await rbacRepository.findRoleByName(
+      null,
+      DEFAULT_WORKSPACE_ROLE_NAMES.OWNER,
+    );
 
     if (!ownerRole) {
       throw new HttpError(500, "INTERNAL_SERVER_ERROR", "Owner role not found");
