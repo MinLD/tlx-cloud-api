@@ -12,6 +12,10 @@ import type {
   UpdateWorkspaceRoleResponseDto,
   WorkspaceMemberDto,
 } from "./rbac.dto.js";
+import {
+  PERMISSION_SCOPE,
+  type PermissionScope,
+} from "../../shared/permissions/permission.keys.js";
 import { rbacService } from "./rbac.service.js";
 
 const toSingleString = (value: unknown): string => {
@@ -141,7 +145,16 @@ export const rbacController = {
     req: Request,
     res: Response<ApiResponse<PermissionDto[]>>,
   ) {
-    const permissions = (await rbacService.getPermissions()) as PermissionDto[];
+    const query = req.query as Record<string, unknown>;
+    const scope = toSingleString(query.scope).toLowerCase();
+    const permissionScope: PermissionScope | undefined =
+      scope === PERMISSION_SCOPE.SYSTEM || scope === PERMISSION_SCOPE.WORKSPACE
+        ? scope
+        : undefined;
+
+    const permissions = (await rbacService.getPermissions({
+      scope: permissionScope,
+    })) as PermissionDto[];
 
     return sendApiResponse(
       res,

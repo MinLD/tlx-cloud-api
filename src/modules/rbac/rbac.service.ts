@@ -1,5 +1,9 @@
 import { HttpError } from "../../shared/errors/http.error.js";
-import type { PermissionKey } from "../../shared/permissions/permission.keys.js";
+import {
+  PERMISSION_SCOPE,
+  type PermissionKey,
+  type PermissionScope,
+} from "../../shared/permissions/permission.keys.js";
 import type { WorkspaceMemberDto } from "./rbac.dto.js";
 import { toPermissionDto, toRoleDto, toWorkspaceMemberDto } from "./rbac.mapper.js";
 import { rbacRepository } from "./rbac.repository.js";
@@ -14,6 +18,10 @@ type HasRoleParams = {
   userId: string;
   workspaceId: string;
   roleNames: string[];
+};
+
+type GetPermissionsParams = {
+  scope?: PermissionScope;
 };
 
 type UpdateWorkspaceMemberRolesParams = {
@@ -129,8 +137,10 @@ export const rbacService = {
     return toWorkspaceMemberDto(updatedMember);
   },
 
-  async getPermissions(): Promise<ReturnType<typeof toPermissionDto>[]> {
-    const permissions = await rbacRepository.findPermissions();
+  async getPermissions({
+    scope,
+  }: GetPermissionsParams = {}): Promise<ReturnType<typeof toPermissionDto>[]> {
+    const permissions = await rbacRepository.findPermissions(scope);
     return permissions.map(toPermissionDto);
   },
 
@@ -179,7 +189,7 @@ export const rbacService = {
       throw new Error("Role not found");
     }
 
-    if (role.isSystem) {
+    if (role.isSystem || role.scope !== "WORKSPACE") {
       throw new Error("System role cannot be updated");
     }
 
@@ -220,7 +230,7 @@ export const rbacService = {
       throw new Error("Role not found");
     }
 
-    if (role.isSystem) {
+    if (role.isSystem || role.scope !== "WORKSPACE") {
       throw new Error("System role cannot be deleted");
     }
 

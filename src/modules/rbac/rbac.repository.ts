@@ -1,4 +1,5 @@
 import { prisma } from "../../lib/prisma.js";
+import { PERMISSION_SCOPE } from "../../shared/permissions/permission.keys.js";
 
 const workspaceMemberIncludeRoles = {
   roles: {
@@ -52,6 +53,16 @@ export const rbacRepository = {
     return prisma.permission.findUnique({
       where: {
         key,
+      },
+    });
+  },
+
+  findPermissionsByIds(permissionIds: string[]) {
+    return prisma.permission.findMany({
+      where: {
+        id: {
+          in: permissionIds,
+        },
       },
     });
   },
@@ -128,6 +139,7 @@ export const rbacRepository = {
     return prisma.role.findMany({
       where: {
         workspaceId,
+        scope: "WORKSPACE",
       },
       include: roleIncludePermissions,
       orderBy: {
@@ -148,6 +160,7 @@ export const rbacRepository = {
         name: data.name,
         description: data.description,
         isSystem: false,
+        scope: "WORKSPACE",
         rolePermissions: {
           create: data.permissionIds.map((permissionId) => ({
             permissionId,
@@ -222,8 +235,20 @@ export const rbacRepository = {
       },
     });
   },
-  findPermissions() {
+  findPermissions(scope?: (typeof PERMISSION_SCOPE)[keyof typeof PERMISSION_SCOPE]) {
+    const prismaScope =
+      scope === PERMISSION_SCOPE.SYSTEM
+        ? "SYSTEM"
+        : scope === PERMISSION_SCOPE.WORKSPACE
+          ? "WORKSPACE"
+          : undefined;
+
     return prisma.permission.findMany({
+      where: prismaScope
+        ? {
+            scope: prismaScope,
+          }
+        : undefined,
       orderBy: {
         key: "asc",
       },
