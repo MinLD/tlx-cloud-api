@@ -10,7 +10,7 @@
     "start": "bun index.ts",
     "check": "bun run build",
     "prisma:generate": "prisma generate",
-    "build": "bun run prisma:generate && tsc --noEmit",
+    "build": "bun run prisma:generate && node ./node_modules/typescript/bin/tsc --noEmit",
     "test": "bun test",
     "db:seed": "tsx prisma/seed.ts"
   },

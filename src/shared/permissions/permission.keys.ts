@@ -1,4 +1,8 @@
 export const PERMISSIONS = {
+  PERMISSION_READ: "permission.read",
+  PERMISSION_UPDATE: "permission.update",
+  PERMISSION_DELETE: "permission.delete",
+
   WORKSPACE_READ: "workspace.read",
   WORKSPACE_UPDATE: "workspace.update",
   WORKSPACE_DELETE: "workspace.delete",
@@ -37,7 +41,7 @@ export const PERMISSIONS = {
   BILLING_MANAGE: "billing.manage",
 
   API_MONITOR_READ: "api_monitor.read",
-  API_MONITOR_MANAGE: "api_monitor.manage"
+  API_MONITOR_MANAGE: "api_monitor.manage",
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -48,131 +52,131 @@ export const PERMISSION_LIST: Array<{
 }> = [
   {
     key: PERMISSIONS.WORKSPACE_READ,
-    description: "View workspace information"
+    description: "View workspace information",
   },
   {
     key: PERMISSIONS.WORKSPACE_UPDATE,
-    description: "Update workspace information"
+    description: "Update workspace information",
   },
   {
     key: PERMISSIONS.WORKSPACE_DELETE,
-    description: "Delete workspace"
+    description: "Delete workspace",
   },
 
   {
     key: PERMISSIONS.MEMBER_INVITE,
-    description: "Invite workspace members"
+    description: "Invite workspace members",
   },
   {
     key: PERMISSIONS.MEMBER_READ,
-    description: "View workspace members"
+    description: "View workspace members",
   },
   {
     key: PERMISSIONS.MEMBER_UPDATE_ROLE,
-    description: "Update member roles"
+    description: "Update member roles",
   },
   {
     key: PERMISSIONS.MEMBER_REMOVE,
-    description: "Remove workspace members"
+    description: "Remove workspace members",
   },
 
   {
     key: PERMISSIONS.ROLE_CREATE,
-    description: "Create custom roles"
+    description: "Create custom roles",
   },
   {
     key: PERMISSIONS.ROLE_READ,
-    description: "View roles and permissions"
+    description: "View roles and permissions",
   },
   {
     key: PERMISSIONS.ROLE_UPDATE,
-    description: "Update custom roles"
+    description: "Update custom roles",
   },
   {
     key: PERMISSIONS.ROLE_DELETE,
-    description: "Delete custom roles"
+    description: "Delete custom roles",
   },
   {
     key: PERMISSIONS.ROLE_ASSIGN_PERMISSION,
-    description: "Assign permissions to roles"
+    description: "Assign permissions to roles",
   },
 
   {
     key: PERMISSIONS.PROJECT_CREATE,
-    description: "Create projects"
+    description: "Create projects",
   },
   {
     key: PERMISSIONS.PROJECT_READ,
-    description: "View projects"
+    description: "View projects",
   },
   {
     key: PERMISSIONS.PROJECT_UPDATE,
-    description: "Update projects"
+    description: "Update projects",
   },
   {
     key: PERMISSIONS.PROJECT_DELETE,
-    description: "Delete projects"
+    description: "Delete projects",
   },
 
   {
     key: PERMISSIONS.SCAN_CREATE,
-    description: "Create scan runs"
+    description: "Create scan runs",
   },
   {
     key: PERMISSIONS.SCAN_READ,
-    description: "View scan runs"
+    description: "View scan runs",
   },
   {
     key: PERMISSIONS.SCAN_IMPORT,
-    description: "Import scan results"
+    description: "Import scan results",
   },
 
   {
     key: PERMISSIONS.ISSUE_READ,
-    description: "View scan issues"
+    description: "View scan issues",
   },
   {
     key: PERMISSIONS.ISSUE_UPDATE_STATUS,
-    description: "Update issue status"
+    description: "Update issue status",
   },
   {
     key: PERMISSIONS.ISSUE_COMMENT,
-    description: "Comment on issues"
+    description: "Comment on issues",
   },
 
   {
     key: PERMISSIONS.ARTIFACT_READ,
-    description: "View artifacts"
+    description: "View artifacts",
   },
   {
     key: PERMISSIONS.ARTIFACT_UPLOAD,
-    description: "Upload artifacts"
+    description: "Upload artifacts",
   },
   {
     key: PERMISSIONS.ARTIFACT_DELETE,
-    description: "Delete artifacts"
+    description: "Delete artifacts",
   },
 
   {
     key: PERMISSIONS.AI_ANALYZE,
-    description: "Use AI UX Consultant"
+    description: "Use AI UX Consultant",
   },
 
   {
     key: PERMISSIONS.BILLING_READ,
-    description: "View billing information"
+    description: "View billing information",
   },
   {
     key: PERMISSIONS.BILLING_MANAGE,
-    description: "Manage billing and subscriptions"
+    description: "Manage billing and subscriptions",
   },
 
   {
     key: PERMISSIONS.API_MONITOR_READ,
-    description: "View API monitoring"
+    description: "View API monitoring",
   },
   {
     key: PERMISSIONS.API_MONITOR_MANAGE,
-    description: "Manage API monitoring targets"
-  }
+    description: "Manage API monitoring targets",
+  },
 ];
