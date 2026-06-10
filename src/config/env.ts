@@ -13,6 +13,9 @@ interface Env {
   CORS_ORIGINS: string[];
   RATE_LIMIT_WINDOW_MS: number;
   RATE_LIMIT_MAX: number;
+  RESEND_API_KEY: string;
+  MAIL_FROM: string;
+  APP_URL: string;
 }
 
 const toNumber = (value: string | undefined, fallback: number): number => {
@@ -50,4 +53,7 @@ export const env: Env = {
   CORS_ORIGINS: toStringList(process.env.CORS_ORIGINS),
   RATE_LIMIT_WINDOW_MS: toNumber(process.env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
   RATE_LIMIT_MAX: toNumber(process.env.RATE_LIMIT_MAX, 100),
+  RESEND_API_KEY: toString(process.env.RESEND_API_KEY, ""),
+  MAIL_FROM: toString(process.env.MAIL_FROM, ""),
+  APP_URL: toString(process.env.APP_URL, ""),
 };

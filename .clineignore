@@ -1,0 +1,14 @@
+node_modules/
+
+.env
+*.log
+
+
+
+
+src/generated/
+
+
+bun.lock
+package-lock.json
+yarn.lock

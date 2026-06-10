@@ -2,12 +2,14 @@
 /// <reference types="bun" />
 import { afterEach, describe, expect, mock, test } from "bun:test";
 import { WorkspaceInvitationStatus } from "../../generated/prisma/client.js";
+import { mailService } from "../../shared/mail/mail.service.js";
 import { memberRepository } from "./member.repository.js";
 import { memberService } from "./member.service.js";
 
 const repo = memberRepository as unknown as Record<string, any>;
 
 const originalRepository = {
+  findWorkspaceById: repo.findWorkspaceById,
   findWorkspaceMembers: repo.findWorkspaceMembers,
   findWorkspaceMember: repo.findWorkspaceMember,
   findWorkspaceMemberById: repo.findWorkspaceMemberById,
@@ -25,13 +27,26 @@ const originalRepository = {
   findUserById: repo.findUserById,
 };
 
+const originalMailService = {
+  sendInvitationEmail: mailService.sendInvitationEmail,
+};
+
 afterEach(() => {
   Object.assign(repo, originalRepository);
+  Object.assign(mailService, originalMailService);
   mock.restore();
 });
 
 describe("members service", () => {
   test("inviteMember creates invitation and invitation roles", async () => {
+    repo.findWorkspaceById = mock(async () => ({
+      id: "ws_1",
+      name: "Workspace 1",
+      description: null,
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+      ownerId: "user_1",
+    }));
     repo.findWorkspaceRoleById = mock(async (roleId: string) => ({
       id: roleId,
       workspaceId: "ws_1",
@@ -44,6 +59,15 @@ describe("members service", () => {
     }));
 
     repo.findUserByEmail = mock(async () => null);
+    repo.findUserById = mock(async () => ({
+      id: "user_1",
+      name: "Inviter",
+      email: "inviter@example.com",
+      password: "hashed",
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+    }));
+    mailService.sendInvitationEmail = mock(async () => ({ skipped: true as const }));
     repo.createInvitation = mock(async () => ({
       id: "inv_1",
       workspaceId: "ws_1",
@@ -115,6 +139,7 @@ describe("members service", () => {
     expect(result.invitation.email).toBe("test@example.com");
     expect(result.invitation.roles).toHaveLength(2);
     expect(repo.createInvitationRoles).toHaveBeenCalledTimes(1);
+    expect(mailService.sendInvitationEmail).toHaveBeenCalledTimes(1);
   });
 
   test("acceptInvitation creates member and copies invitation roles", async () => {

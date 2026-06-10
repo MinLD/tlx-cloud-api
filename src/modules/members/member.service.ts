@@ -1,6 +1,8 @@
 import { randomUUID } from "node:crypto";
+import { env } from "../../config/env.js";
 import { HttpError } from "../../shared/errors/http.error.js";
 import { WorkspaceInvitationStatus } from "../../generated/prisma/client.js";
+import { mailService } from "../../shared/mail/mail.service.js";
 import { memberRepository } from "./member.repository.js";
 import {
   toWorkspaceInvitationDto,
@@ -76,6 +78,16 @@ export const memberService = {
       }
     }
 
+    const workspace = await memberRepository.findWorkspaceById(params.workspaceId);
+    if (!workspace) {
+      throw new HttpError(404, "NOT_FOUND", "Workspace not found");
+    }
+
+    const invitedBy = await memberRepository.findUserById(params.invitedById);
+    if (!invitedBy) {
+      throw new HttpError(404, "NOT_FOUND", "Invited by user not found");
+    }
+
     const token = randomUUID();
     const expiresAt = params.expiresAt ? new Date(params.expiresAt) : null;
 
@@ -99,6 +111,17 @@ export const memberService = {
         "Failed to reload invitation",
       );
     }
+
+    const acceptUrl = `${env.APP_URL}/invitations/accept?token=${encodeURIComponent(token)}`;
+    const rejectUrl = `${env.APP_URL}/invitations/reject?token=${encodeURIComponent(token)}`;
+
+    await mailService.sendInvitationEmail({
+      to: email,
+      workspaceName: workspace.name,
+      invitedByName: invitedBy.name ?? invitedBy.email,
+      acceptUrl,
+      rejectUrl,
+    });
 
     return {
       invitation: toWorkspaceInvitationDto(updatedInvitation),

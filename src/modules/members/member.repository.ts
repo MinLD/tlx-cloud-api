@@ -2,6 +2,13 @@ import { prisma } from "../../lib/prisma.js";
 import { WorkspaceInvitationStatus } from "../../generated/prisma/client.js";
 
 export const memberRepository = {
+  findWorkspaceById(workspaceId: string) {
+    return prisma.workspace.findUnique({
+      where: {
+        id: workspaceId,
+      },
+    });
+  },
   findWorkspaceMembers(workspaceId: string) {
     return prisma.workspaceMember.findMany({
       where: {
